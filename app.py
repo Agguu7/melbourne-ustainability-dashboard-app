@@ -1,34 +1,32 @@
 import streamlit as st
+import pandas as pd
+from data import get_pedestrian_data
 
-# Page configuration
-st.set_page_config(
-    page_title="Melbourne Sustainability Dashboard",
-    page_icon="🌿",
-    layout="wide"
-)
+st.set_page_config(page_title="Melbourne Sustainability Dashboard", page_icon="🌿", layout="wide")
 
-# Header
 st.title("🌿 Melbourne Sustainability Dashboard")
 st.subheader("Tracking Melbourne's future, powered by AI")
 
-st.write("""
-Welcome! This dashboard shows real sustainability data across 
-Melbourne — pedestrian traffic, energy usage, and weather impact 
-— with AI-powered predictions.
-""")
+with st.spinner("Loading real Melbourne data..."):
+    df = get_pedestrian_data()
 
-# Three columns for key stats
 col1, col2, col3 = st.columns(3)
 
 with col1:
-    st.metric(label="🚶 Pedestrian Traffic", value="12,450", delta="+5% today")
+    total = df["pedestriancount"].sum()
+    st.metric(label="🚶 Total Pedestrians", value=f"{total:,}")
 
 with col2:
-    st.metric(label="⚡ Energy Usage", value="8,230 kWh", delta="-3% today")
+    avg = int(df["pedestriancount"].mean())
+    st.metric(label="📊 Average Count", value=f"{avg:,}")
 
 with col3:
-    st.metric(label="🌡️ Temperature", value="24°C", delta="+2°C today")
+    sensors = df["sensor_name"].nunique()
+    st.metric(label="📡 Active Sensors", value=sensors)
 
 st.divider()
+
+st.subheader("📋 Latest Pedestrian Sensor Readings")
+st.dataframe(df[["sensing_date", "sensor_name", "pedestriancount", "direction_1", "direction_2"]])
 
 st.info("📡 Data sourced from City of Melbourne Open Data Portal")
